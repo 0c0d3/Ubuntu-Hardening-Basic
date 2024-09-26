@@ -10,7 +10,7 @@ fi
 echo "Updating package list..."
 apt update && apt upgrade -y
 
-# Install SELinux and utilities
+# Install SELinux and necessary utilities
 echo "Installing SELinux and necessary utilities..."
 apt install selinux selinux-basics selinux-policy-default policycoreutils policycoreutils-devel selinux-utils -y
 
@@ -115,11 +115,14 @@ caps.drop all
 seccomp
 EOL
 
+# Create the necessary directories for SELinux policies if they don't exist
+mkdir -p /etc/selinux/targeted/policy/
+
 # Additional SELinux policies for blocking macro execution in PDF files
 echo "Creating additional SELinux policies..."
 
 # Policy for blocking macro execution in LibreOffice
-cat <<EOL > /etc/selinux/targeted/policy/LibreOfficeMacros.te
+cat <<EOL > /etc/selinux/targeted/LibreOfficeMacros.te
 module LibreOfficeMacros 1.0;
 
 require {
@@ -132,7 +135,7 @@ deny libreoffice_t self:process { execmem execmod execstack };
 EOL
 
 # Policy for blocking script execution in PDF viewers
-cat <<EOL > /etc/selinux/targeted/policy/PDFViewerScripts.te
+cat <<EOL > /etc/selinux/targeted/PDFViewerScripts.te
 module PDFViewerScripts 1.0;
 
 require {
@@ -147,13 +150,13 @@ EOL
 # Compile and load the new policies
 echo "Compiling and loading SELinux policies..."
 if command -v checkmodule &> /dev/null; then
-    checkmodule -M -m -o /etc/selinux/targeted/policy/LibreOfficeMacros.mod /etc/selinux/targeted/policy/LibreOfficeMacros.te
-    semodule_package -o /etc/selinux/targeted/policy/LibreOfficeMacros.pp -m /etc/selinux/targeted/policy/LibreOfficeMacros.mod
-    semodule -i /etc/selinux/targeted/policy/LibreOfficeMacros.pp
+    checkmodule -M -m -o /etc/selinux/targeted/LibreOfficeMacros.mod /etc/selinux/targeted/LibreOfficeMacros.te
+    semodule_package -o /etc/selinux/targeted/LibreOfficeMacros.pp -m /etc/selinux/targeted/LibreOfficeMacros.mod
+    semodule -i /etc/selinux/targeted/LibreOfficeMacros.pp
 
-    checkmodule -M -m -o /etc/selinux/targeted/policy/PDFViewerScripts.mod /etc/selinux/targeted/policy/PDFViewerScripts.te
-    semodule_package -o /etc/selinux/targeted/policy/PDFViewerScripts.pp -m /etc/selinux/targeted/policy/PDFViewerScripts.mod
-    semodule -i /etc/selinux/targeted/policy/PDFViewerScripts.pp
+    checkmodule -M -m -o /etc/selinux/targeted/PDFViewerScripts.mod /etc/selinux/targeted/PDFViewerScripts.te
+    semodule_package -o /etc/selinux/targeted/PDFViewerScripts.pp -m /etc/selinux/targeted/PDFViewerScripts.mod
+    semodule -i /etc/selinux/targeted/PDFViewerScripts.pp
 else
     echo "SELinux utilities not found. Please ensure they are installed."
     exit 1
