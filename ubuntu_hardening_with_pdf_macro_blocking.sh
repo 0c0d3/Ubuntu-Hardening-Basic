@@ -132,6 +132,9 @@ echo "Setting up automatic updates..."
 apt install unattended-upgrades -y
 dpkg-reconfigure --priority=low unattended-upgrades
 
+#Enable SELinux
+sudo selinux-activate
+
 # Final status messages
 echo "Final status of UFW:"
 ufw status verbose
