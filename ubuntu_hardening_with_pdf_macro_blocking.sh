@@ -2,8 +2,8 @@
 
 # Ensure the script is run as root
 if [[ $EUID -ne 0 ]]; then
-    echo "This script must be run as root"
-    exit 1
+   echo "This script must be run as root" 
+   exit 1
 fi
 
 # Update the package list
@@ -29,6 +29,10 @@ setenforce 1
 # Enable SELinux at boot
 echo "Configuring SELinux to boot in enforcing mode..."
 sed -i 's/^SELINUX=.*/SELINUX=enforcing/' /etc/selinux/config
+
+# Install required SELinux utilities if not present
+echo "Installing necessary SELinux utilities..."
+apt install policycoreutils policycoreutils-devel selinux-utils -y
 
 # Install Firejail
 echo "Installing Firejail..."
@@ -146,13 +150,18 @@ EOL
 
 # Compile and load the new policies
 echo "Compiling and loading SELinux policies..."
-checkmodule -M -m -o /etc/selinux/targeted/policy/LibreOfficeMacros.mod /etc/selinux/targeted/policy/LibreOfficeMacros.te
-semodule_package -o /etc/selinux/targeted/policy/LibreOfficeMacros.pp -m /etc/selinux/targeted/policy/LibreOfficeMacros.mod
-semodule -i /etc/selinux/targeted/policy/LibreOfficeMacros.pp
+if command -v checkmodule &> /dev/null; then
+    checkmodule -M -m -o /etc/selinux/targeted/policy/LibreOfficeMacros.mod /etc/selinux/targeted/policy/LibreOfficeMacros.te
+    semodule_package -o /etc/selinux/targeted/policy/LibreOfficeMacros.pp -m /etc/selinux/targeted/policy/LibreOfficeMacros.mod
+    semodule -i /etc/selinux/targeted/policy/LibreOfficeMacros.pp
 
-checkmodule -M -m -o /etc/selinux/targeted/policy/PDFViewerScripts.mod /etc/selinux/targeted/policy/PDFViewerScripts.te
-semodule_package -o /etc/selinux/targeted/policy/PDFViewerScripts.pp -m /etc/selinux/targeted/policy/PDFViewerScripts.mod
-semodule -i /etc/selinux/targeted/policy/PDFViewerScripts.pp
+    checkmodule -M -m -o /etc/selinux/targeted/policy/PDFViewerScripts.mod /etc/selinux/targeted/policy/PDFViewerScripts.te
+    semodule_package -o /etc/selinux/targeted/policy/PDFViewerScripts.pp -m /etc/selinux/targeted/policy/PDFViewerScripts.mod
+    semodule -i /etc/selinux/targeted/policy/PDFViewerScripts.pp
+else
+    echo "SELinux utilities not found. Please ensure they are installed."
+    exit 1
+fi
 
 # Enable automatic updates for security packages
 echo "Setting up automatic updates..."
