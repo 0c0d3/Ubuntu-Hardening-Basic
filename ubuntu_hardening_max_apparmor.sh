@@ -2,8 +2,8 @@
 
 # Ensure the script is run as root
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
+    echo "This script must be run as root"
+    exit 1
 fi
 
 # Update the package list
@@ -60,15 +60,12 @@ cat <<EOL > /etc/apparmor.d/usr.bin.firejail
 
     # Deny all other access
     deny /**,
-    
-    # Deny network access (optional, uncomment if needed)
-    # deny network,
-    
+
     # Deny loading of additional libraries
     deny /lib/**,
     deny /usr/lib/**,
     deny /usr/libexec/**,
-    
+
     # Deny access to certain files
     deny /dev/**,
     deny /proc/**,
