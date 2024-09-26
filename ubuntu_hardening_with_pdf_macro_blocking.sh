@@ -10,9 +10,9 @@ fi
 echo "Updating package list..."
 apt update && apt upgrade -y
 
-# Install SELinux
-echo "Installing SELinux..."
-apt install selinux selinux-basics selinux-policy-default -y
+# Install SELinux and utilities
+echo "Installing SELinux and necessary utilities..."
+apt install selinux selinux-basics selinux-policy-default policycoreutils policycoreutils-devel selinux-utils -y
 
 # Enable SELinux
 echo "Enabling SELinux..."
@@ -29,10 +29,6 @@ setenforce 1
 # Enable SELinux at boot
 echo "Configuring SELinux to boot in enforcing mode..."
 sed -i 's/^SELINUX=.*/SELINUX=enforcing/' /etc/selinux/config
-
-# Install required SELinux utilities if not present
-echo "Installing necessary SELinux utilities..."
-apt install policycoreutils policycoreutils-devel selinux-utils -y
 
 # Install Firejail
 echo "Installing Firejail..."
