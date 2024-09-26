@@ -35,7 +35,7 @@ ufw default allow outgoing
 
 # Allow specific services (SSH, HTTP, HTTPS)
 echo "Allowing SSH, HTTP, and HTTPS through UFW..."
-ufw block ssh
+ufw allow ssh
 ufw allow http
 ufw allow https
 
