@@ -23,17 +23,24 @@ apt install policycoreutils selinux-basics selinux-utils -y
 echo "Enabling SELinux..."
 selinux-config-enforcing
 
-# Check SELinux status
-echo "Current SELinux status:"
-sestatus
+# Check and ensure SELinux is enabled
+echo "Checking SELinux status..."
+if sestatus | grep -q "disabled"; then
+    echo "SELinux is currently disabled. Configuring it to be enabled at boot."
+    
+    # Enable SELinux at boot
+    sed -i 's/^SELINUX=.*/SELINUX=enforcing/' /etc/selinux/config
+
+    echo "Reboot your system to enable SELinux."
+    exit 1
+else
+    echo "Current SELinux status:"
+    sestatus
+fi
 
 # Set SELinux to enforcing mode
 echo "Setting SELinux to enforcing mode..."
 setenforce 1
-
-# Enable SELinux at boot
-echo "Configuring SELinux to boot in enforcing mode..."
-sed -i 's/^SELINUX=.*/SELINUX=enforcing/' /etc/selinux/config
 
 # Install Firejail
 echo "Installing Firejail..."
