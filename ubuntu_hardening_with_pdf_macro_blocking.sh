@@ -12,7 +12,13 @@ apt update && apt upgrade -y
 
 # Install SELinux and necessary utilities
 echo "Installing SELinux and necessary utilities..."
-apt install selinux selinux-basics selinux-policy-default policycoreutils policycoreutils-devel selinux-utils -y
+apt install policycoreutils selinux-utils selinux-basics selinux-policy-default -y
+
+# Check for SELinux utilities
+if ! command -v checkmodule &> /dev/null || ! command -v semodule &> /dev/null || ! command -v semodule_package &> /dev/null; then
+    echo "SELinux utilities not found. Please install the necessary packages."
+    exit 1
+fi
 
 # Enable SELinux
 echo "Enabling SELinux..."
@@ -149,18 +155,13 @@ EOL
 
 # Compile and load the new policies
 echo "Compiling and loading SELinux policies..."
-if command -v checkmodule &> /dev/null; then
-    checkmodule -M -m -o /etc/selinux/targeted/LibreOfficeMacros.mod /etc/selinux/targeted/LibreOfficeMacros.te
-    semodule_package -o /etc/selinux/targeted/LibreOfficeMacros.pp -m /etc/selinux/targeted/LibreOfficeMacros.mod
-    semodule -i /etc/selinux/targeted/LibreOfficeMacros.pp
+checkmodule -M -m -o /etc/selinux/targeted/LibreOfficeMacros.mod /etc/selinux/targeted/LibreOfficeMacros.te
+semodule_package -o /etc/selinux/targeted/LibreOfficeMacros.pp -m /etc/selinux/targeted/LibreOfficeMacros.mod
+semodule -i /etc/selinux/targeted/LibreOfficeMacros.pp
 
-    checkmodule -M -m -o /etc/selinux/targeted/PDFViewerScripts.mod /etc/selinux/targeted/PDFViewerScripts.te
-    semodule_package -o /etc/selinux/targeted/PDFViewerScripts.pp -m /etc/selinux/targeted/PDFViewerScripts.mod
-    semodule -i /etc/selinux/targeted/PDFViewerScripts.pp
-else
-    echo "SELinux utilities not found. Please ensure they are installed."
-    exit 1
-fi
+checkmodule -M -m -o /etc/selinux/targeted/PDFViewerScripts.mod /etc/selinux/targeted/PDFViewerScripts.te
+semodule_package -o /etc/selinux/targeted/PDFViewerScripts.pp -m /etc/selinux/targeted/PDFViewerScripts.mod
+semodule -i /etc/selinux/targeted/PDFViewerScripts.pp
 
 # Enable automatic updates for security packages
 echo "Setting up automatic updates..."
