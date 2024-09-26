@@ -141,6 +141,8 @@ ufw status verbose
 
 echo "SELinux status:"
 sestatus
+#fixfiles on boot
+fixfiles onboot
 
 echo "Installation and configuration complete!"
 echo "Reboot your system to apply all changes."
