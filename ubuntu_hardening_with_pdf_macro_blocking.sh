@@ -10,15 +10,14 @@ fi
 echo "Updating package list..."
 apt update && apt upgrade -y
 
-# Install SELinux and necessary utilities
-echo "Installing SELinux and necessary utilities..."
-apt install policycoreutils selinux-utils selinux-basics selinux-policy-default -y
+# Stop and disable AppArmor
+echo "Stopping and disabling AppArmor..."
+sudo systemctl stop apparmor
+sudo systemctl disable apparmor
 
-# Check for SELinux utilities
-if ! command -v checkmodule &> /dev/null || ! command -v semodule &> /dev/null || ! command -v semodule_package &> /dev/null; then
-    echo "SELinux utilities not found. Please install the necessary packages."
-    exit 1
-fi
+# Install SELinux
+echo "Installing SELinux..."
+apt install policycoreutils selinux-basics selinux-utils -y
 
 # Enable SELinux
 echo "Enabling SELinux..."
@@ -120,46 +119,6 @@ caps.drop all
 # Block execution of embedded scripts
 seccomp
 EOL
-
-# Additional SELinux policies for blocking macro execution in PDF files
-echo "Creating additional SELinux policies..."
-
-# Policy for blocking macro execution in LibreOffice
-cat <<EOL > /etc/selinux/targeted/policy/LibreOfficeMacros.te
-module LibreOfficeMacros 1.0;
-
-require {
-    type libreoffice_t;
-    class process { execmem execmod execstack };
-}
-
-# Block execution of macros
-deny libreoffice_t self:process { execmem execmod execstack };
-EOL
-
-# Policy for blocking script execution in PDF viewers
-cat <<EOL > /etc/selinux/targeted/policy/PDFViewerScripts.te
-module PDFViewerScripts 1.0;
-
-require {
-    type evince_t; # Assuming Evince as the PDF viewer
-    class process { execmem execmod execstack };
-}
-
-# Block execution of embedded scripts in PDF files
-deny evince_t self:process { execmem execmod execstack };
-EOL
-
-# Compile and load the new policies
-echo "Compiling and loading SELinux policies..."
-
-checkmodule -M -m -o /etc/selinux/targeted/policy/LibreOfficeMacros.mod /etc/selinux/targeted/policy/LibreOfficeMacros.te
-semodule_package -o /etc/selinux/targeted/policy/LibreOfficeMacros.pp -m /etc/selinux/targeted/policy/LibreOfficeMacros.mod
-semodule -i /etc/selinux/targeted/policy/LibreOfficeMacros.pp
-
-checkmodule -M -m -o /etc/selinux/targeted/policy/PDFViewerScripts.mod /etc/selinux/targeted/policy/PDFViewerScripts.te
-semodule_package -o /etc/selinux/targeted/policy/PDFViewerScripts.pp -m /etc/selinux/targeted/policy/PDFViewerScripts.mod
-semodule -i /etc/selinux/targeted/policy/PDFViewerScripts.pp
 
 # Enable automatic updates for security packages
 echo "Setting up automatic updates..."
