@@ -12,8 +12,8 @@ apt update && apt upgrade -y
 
 # Stop and disable AppArmor
 echo "Stopping and disabling AppArmor..."
-sudo systemctl stop apparmor
-sudo systemctl disable apparmor
+systemctl stop apparmor
+systemctl disable apparmor
 
 # Install SELinux
 echo "Installing SELinux..."
