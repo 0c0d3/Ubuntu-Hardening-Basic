@@ -139,10 +139,14 @@ sudo selinux-activate
 echo "Final status of UFW:"
 ufw status verbose
 
+#SELnix config
+sudo nano /etc/selinux/config
+
 echo "SELinux status:"
 sestatus
+
 #fixfiles on boot
-fixfiles onboot
+sudo fixfiles onboot
 
 echo "Installation and configuration complete!"
 echo "Reboot your system to apply all changes."
